@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas id="gc" width="640" height="480"></canvas>
+    <a href="/index.html">
+      <button>Return to Homepage</button>
+    </a>
+    <script type="text/javascript">
+      p1y = p2y = 40;
+      pthick = 10;
+      pheight = 100;
+      ballx = bally = 50;
+      bd = 6;
+      xvel = yvel = 4;
+      score1 = score2 = 0;
+      aiSpeed = 10;
+      matchBalance = 0;
+      newPlayer = true;
+
+      window.onload = () => {
+        c = document.getElementById("gc");
+        cc = c.getContext("2d");
+        cc.font = "20px Arial";
+        setInterval(update, 1000 / 60);
+        c.addEventListener("mousemove", (e) => {
+          p1y = e.clientY - pheight / 2;
+        });
+      };
+
+      function reset() {
+        ballx = c.width / 2;
+        ballyx = c.height / 2;
+        if (xvel > 0) {
+          xvel = -4 - score1;
+        } else {
+          xvel = 4 + score1;
+        }
+        aiSpeed = 5 + score1;
+        yvel = 3;
+      }
+      function newMatch() {
+        reset();
+        xvel = yvel = 4;
+        if (score1 > score2) {
+          matchBalance++;
+        } else {
+          matchBalance--;
+        }
+        score1 = score2 = 0;
+        aiSpeed = 10;
+      }
+
+      function gameOver() {}
+      function update() {
+        if (matchBalance > -2) {
+          updateContent();
+        } else {
+          // Background
+          cc.fillStyle = "black";
+          cc.fillRect(0, 0, c.width, c.height);
+          cc.fillStyle = "red";
+          for (i = 0; i < c.height; i += 135) {
+            for (j = 0; j < c.width; j += 17) {
+              if (j != 17 * 6) {
+                cc.fillStyle = "red";
+                cc.fillText("GAME OVER!!", i + j / 5, j);
+              }
+            }
+          }
+          cc.fillStyle = "yellow";
+          cc.fillText("reload Page to restart", 100, 17 * 6);
+        }
+      }
+      function updateContent() {
+        ballx += xvel;
+        bally += yvel;
+
+        if (bally < 0 && yvel < 0) {
+          yvel = -yvel;
+        }
+
+        if (bally > c.height && yvel > 0) {
+          yvel = -yvel;
+        }
+
+        // Ball bouncing off left side
+        if (ballx < 0) {
+          if (bally > p1y - 2 && bally < p1y + pheight + 2) {
+            xvel = -xvel;
+            deltaY = bally - (p1y + pheight / 2);
+            yvel = deltaY * 0.3;
+            xvel += 2;
+          } else {
+            score2++;
+            reset();
+          }
+        }
+
+        // Ball bouncing off right side
+        if (ballx > c.width) {
+          if (bally > p2y - 2 && bally < p2y + pheight + 2) {
+            xvel = -xvel;
+            deltaY = bally - (p2y + pheight / 2);
+            yvel = deltaY * 0.3;
+          } else {
+            score1++;
+            reset();
+          }
+        }
+
+        // AI movement
+        if (p2y + pheight / 2 < bally || p2y + pheight / 2 < bally + 10) {
+          p2y += aiSpeed;
+        }
+        if (p2y + pheight / 2 > bally || p2y + pheight / 2 > bally - 10) {
+          p2y -= aiSpeed;
+        }
+
+        // Background
+        cc.fillStyle = "black";
+        cc.fillRect(0, 0, c.width, c.height);
+        // Ball
+        cc.fillStyle = "firebrick";
+        cc.fillRect(ballx - bd / 2, bally - bd / 2, bd, bd);
+        // Paddle 1
+        cc.fillStyle = "cyan";
+        cc.fillRect(0, p1y, pthick, pheight);
+        // Score 1
+        cc.fillText(score1, 100, 50);
+        // Paddle 2
+        cc.fillStyle = "lime";
+        cc.fillRect(c.width - pthick, p2y, pthick, pheight);
+        // Score 2
+        cc.fillText(score2, c.width - 100, 50);
+
+        cc.fillStyle = "white";
+        //Matches
+        if (score1 > 6 || score2 > 6) {
+          newMatch();
+          newPlayer = false;
+        }
+        if (!newPlayer) {
+          cc.fillText("Matches won: " + matchBalance, 100, c.height - 50);
+        }
+
+        //Speed
+        cc.fillText("Speed: " + xvel, c.width - 200, c.height - 50);
+      }
+    </script>
+  </body>
+</html>
